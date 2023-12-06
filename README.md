@@ -1,2 +1,2 @@
-# file-compression-exercise
+# Info
 Compression program for exercise purpose.
