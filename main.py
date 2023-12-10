@@ -1,12 +1,12 @@
 """Starts the program.
 """
-from frontend.application import Application
+from frontend.application import *
 
 
-def main():
-    application = Application()
-    application.run()
+# def main():
+#     application = Application()
+#     application.run()
 
 
 if __name__ == "__main__":
-    main()
+    run()
