@@ -1,6 +1,6 @@
 """Starts the program.
 """
-from frontend.application import *
+from frontend.application import run
 
 
 # def main():

@@ -2,7 +2,7 @@
 Makes use of fire CLI library
 """
 
-from core.algorihm import LZWAlgorithm, HuffmanAlgorithm
+from core.compression import LZWCompression, HuffmanCompression
 from core.stream_encoder import StreamEncoder
 from core.performance_calculator import PerformanceCalculator
 
@@ -12,8 +12,8 @@ import fire
 class Application(object):
 
     def __init__(self):
-        self.lzw_algorithm = LZWAlgorithm()
-        self.huffman_algorithm = HuffmanAlgorithm()
+        self.lzw_algorithm = LZWCompression()
+        self.huffman_algorithm = HuffmanCompression()
         self.stream_encoder = StreamEncoder()
         self.performance_calculator = PerformanceCalculator()
 

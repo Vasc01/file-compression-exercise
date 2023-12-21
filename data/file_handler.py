@@ -12,7 +12,7 @@ class FileHandler(FileHandlerABC):
 
     def create_file(self, path, data):
         print("File handler creates a file from the data")
-        with open(r'C:\users\vesel\desktop\compressed_data.txt', 'x') as f:
+        with open(r'C:\users\vandreev\desktop\compressed_data.txt', 'x') as f:
             pass
 
     def get_file_size(self, path):
