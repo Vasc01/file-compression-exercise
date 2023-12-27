@@ -29,12 +29,16 @@ class LZWCompression(CompressionABC):
         maximum_dictionary_size = 4096
         dictionary = {chr(i): i for i in range(dictionary_size)}
 
+        # reserve 256 for end of code
+        dictionary_size += 1
+
         # stores sequences for entry in the dictionary
         string = ""
 
-        # encoded output
+        # encoded output in codepoints
         temporary_data_output = []
 
+        # start LZW compression algorithm
         for symbol in uncompressed_data:
             string_and_symbol = string + chr(symbol)
 
@@ -50,12 +54,22 @@ class LZWCompression(CompressionABC):
                     dictionary[string_and_symbol] = dictionary_size
                     dictionary_size += 1
 
+                else:
+                    temporary_data_output.append(256)
+
+                    # Rebuild the dictionary.
+                    dictionary_size = 256
+                    dictionary = {chr(i): i for i in range(dictionary_size)}
+                    # reserve 256 for end of code
+                    dictionary_size += 1
+
                 # stores sequences for entry in the dictionary
                 string = chr(symbol)
 
         # Output the code for string.
         if string:
             temporary_data_output.append(dictionary[string])
+        # end LZW compression algorithm
 
         # output for inspection
         print(dictionary)
@@ -84,9 +98,6 @@ class LZWCompression(CompressionABC):
             newbits = self.inttobits(pt, nextwidth)
             tailbits = tailbits + newbits
 
-            # PAY ATTENTION. This calculation should be driven by the
-            # size of the upstream codebook, right now we're just trusting
-            # that everybody intends to follow the TIFF spec.
             codesize = codesize + 1
 
             if codesize >= (2 ** nextwidth):
@@ -104,7 +115,6 @@ class LZWCompression(CompressionABC):
             tail = self.bitstobytes(tailbits)
             for bt in tail:
                 yield struct.pack("B", bt)
-
 
     def inttobits(self, anint, width=None):
 
@@ -141,8 +151,6 @@ class LZWCompression(CompressionABC):
 
         if nextbit < 7: ret.append(nextbyte)
         return ret
-
-
 
     def decode(self):
         raise NotImplemented
