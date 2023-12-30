@@ -1,5 +1,8 @@
 import struct
+import heapq
+import os
 from abc import ABC, abstractmethod
+
 
 
 class CompressionABC(ABC):
@@ -157,6 +160,12 @@ class LZWCompression(CompressionABC):
 
 
 class HuffmanCompression(CompressionABC):
+    """Huffman compression and decompression algorithms.
+
+    This class relies on codebook generated from the BinaryTree class.
+    It receives input data and a codebook.
+
+    """
 
     def __init__(self):
         self.binary_tree = None
@@ -172,12 +181,130 @@ class HuffmanCompression(CompressionABC):
 
 
 class BinaryTree(object):
+    """Creates a Huffman tree and a codebook out of it.
 
-    def create(self):
-        pass
+    Used in the HuffmanCompression class.
+
+    """
+    def __init__(self):
+
+        # Contains priority queue of nodes with the lowest occurrence values in the front. Managed by heapq.
+        self.heap = []
+        # k:v characters:code used for compression.
+        self.codebook = {}
+        # k:v code:characters used for decompression.
+        self.reversed_codebook = {}
+
+    @staticmethod
+    def create_frequency_dict(input_data):
+        """Determines how many times each element from the input data occurred.
+
+        This is the first pass over the complete data. The occurrence determines how far in the front
+        of the priority que a node is stored.
+        """
+        # frequency dict k:v character:occurrence
+        frequency = {}
+        for character in input_data:
+            if character not in frequency:
+                frequency[character] = 0
+            frequency[character] += 1
+        return frequency
+
+    def create_heap(self, frequency):
+        """Fills the priority queue with elements.
+        Nodes are stored in the priority queue as preparation for the tree creation.
+        """
+        for key in frequency:
+            node = Node(key, frequency[key])
+
+            # Push the value item onto the heap, maintaining the heap invariant.
+            heapq.heappush(self.heap, node)
+
+    def create_tree(self):
+        """Connect individual nodes.
+
+        For two nodes with the lowest occurrence one parent is created with the sum of their occurrences.
+        The process is repeated until one parent/root node is left.
+        """
+
+        # In the last loop only two nodes will be left, so all nodes are regarded.
+        while len(self.heap) > 1:
+
+            # Takes out of the heap the two nodes with the least occurrence, maintaining the heap invariant..
+            node_1 = heapq.heappop(self.heap)
+            node_2 = heapq.heappop(self.heap)
+
+            # Creates a new node in the tree with occurrence level the sum of its child nodes.
+            # This node doesn't have any character info.
+            merged = Node(None, node_1.occurrence + node_2.occurrence)
+            merged.left_child = node_1
+            merged.right_child = node_2
+
+            # Returns the new node in the priority que for further use.
+            heapq.heappush(self.heap, merged)
+
+            # The root node:
+            # At the end the priority que will have only one node with the largest number of occurrence.
+
+    def initiate_create_codes(self):
+        """Starts the recursion for creation of codes.
+
+        """
+        # Creates initial parameters for the recursion.
+        root = heapq.heappop(self.heap)
+        current_code = ""
+
+        # Calls the recursion.
+        self.create_codes(root, current_code)
+
+    def create_codes(self, root, current_code):
+        """Generates codes by traversing the entire tree.
+        """
+        # Recursion end condition:
+        # When bottom of the tree is reached - data containing nodes don't have children.
+        if root is None:
+            return None
+
+        # Activates only if the node is data containing, not only holding occurrence amount.
+        if root.character:
+            # Used for encoding k:v character:code.
+            self.codebook[root.character] = current_code
+            # Used for decoding k:v code:character.
+            self.reversed_codebook[current_code] = root.character
+            return
+
+        # Navigation adds to the code 0 for going to the left child and 1 for going to the right child.
+        self.create_codes(root.left_child, current_code + "0")
+        self.create_codes(root.right_child, current_code + "1")
 
     def export(self):
         pass
 
     def insert(self):
         pass
+
+
+class Node:
+    """Describes nodes used in the BinaryTree.
+
+    Part of the Huffman tree.
+
+    Attributes:
+
+    """
+    def __init__(self, character, occurrence):
+        self.character = character
+        self.occurrence = occurrence
+        self.left_child = None
+        self.right_child = None
+
+    # Comparison base is defined for use by the heapq module in the BinaryTree class.
+    def __lt__(self, other):
+        return self.occurrence < other.occurrence
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if not isinstance(other, Node):
+            return False
+        return self.occurrence == other.occurrence
