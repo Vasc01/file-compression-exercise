@@ -4,15 +4,14 @@ import os
 from abc import ABC, abstractmethod
 
 
-
 class CompressionABC(ABC):
 
     @abstractmethod
-    def encode(self, path):
+    def encode(self, data):
         raise NotImplemented
 
     @abstractmethod
-    def decode(self):
+    def decode(self, data):
         raise NotImplemented
 
 
@@ -168,16 +167,62 @@ class HuffmanCompression(CompressionABC):
     """
 
     def __init__(self):
-        self.binary_tree = None
+        self.codebook = None
+        self.reversed_codebook = None
 
-    def set_binary_tree(self, binary_tree):
-        self.binary_tree = binary_tree
+    def set_codebook(self, codebook, reversed_codebook):
+        self.codebook = codebook
+        self.reversed_codebook = reversed_codebook
 
-    def encode(self, path):
+    def encode(self, uncompressed_data):
+        """Executes sequence of steps/functions for the encoding process
+        """
+        converted_data = self.convert_to_code(uncompressed_data)
+        padded_converted_data = self.pad_converted_data(converted_data)
+        mutable_bytes_data = self.create_byte_array(padded_converted_data)
+        encoded_data = bytes(mutable_bytes_data)
+
+        return encoded_data
+
+    def decode(self, input_data):
         pass
 
-    def decode(self):
-        pass
+    def convert_to_code(self, uncompressed_data):
+        """Replaces data entries with code from the codebook and returns the converted data
+        """
+        converted_data = ""
+        for entry in uncompressed_data:
+            converted_data += self.codebook[entry]
+        return converted_data
+
+    @staticmethod
+    def pad_converted_data(converted_data):
+        """Adds padding to converted data to keep it multiple of 8.
+        """
+        # Finds the amount of missing bits and adds them at the end as trailing zero.
+        extra_padding = 8 - len(converted_data) % 8
+        converted_data += "0" * extra_padding
+
+        # Puts information about the padding in form of a full byte in the front of the converted data.
+        padding_info = f"{extra_padding:08b}"
+        converted_data = padding_info + converted_data
+
+        return converted_data
+
+    @staticmethod
+    def create_byte_array(padded_converted_data):
+        """String to bytearray
+        """
+        if len(padded_converted_data) % 8 != 0:
+            print("Encoded text not padded properly")
+            exit(0)
+
+        bytes_data = bytearray()
+        for i in range(0, len(padded_converted_data), 8):
+            byte = padded_converted_data[i:i + 8]
+            bytes_data.append(int(byte, 2))
+
+        return bytes_data
 
 
 class BinaryTree(object):
