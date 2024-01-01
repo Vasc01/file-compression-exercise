@@ -184,8 +184,29 @@ class HuffmanCompression(CompressionABC):
 
         return encoded_data
 
-    def decode(self, input_data):
-        pass
+    def decode(self, compressed_data):
+        """
+        Receives the compressed data (bytes)
+        """
+        bit_string = ""
+
+        # Extracts the bits from the bytes and combines them to a string in bit_string.
+        for b in compressed_data:
+
+            # bin(int) is used to convert and obtain an integer value's binary string equivalent.
+            # Slice operator omits the prefix "0b" in the string.
+            # rjust() does right alignment of the string,
+            # while filling the left empty spaces with "0" until total length of 8 is reached.
+            bits = bin(b)[2:].rjust(8, '0')
+            bit_string += bits
+
+        # Removes leading and trailing padding bits.
+        unpadded_bit_string = self.remove_padding(bit_string)
+
+        # Decoding using the reversed_codebook.
+        decompressed_data = self.convert_to_original(unpadded_bit_string)
+
+        return decompressed_data
 
     def convert_to_code(self, uncompressed_data):
         """Replaces data entries with code from the codebook and returns the converted data
@@ -194,6 +215,22 @@ class HuffmanCompression(CompressionABC):
         for entry in uncompressed_data:
             converted_data += self.codebook[entry]
         return converted_data
+
+    def convert_to_original(self, unpadded_bit_string):
+        """Converts encoded data to the original using the reversed codebook
+        """
+        current_code = ""
+        decompressed_data = ""
+
+        # Reads bits from the encoded data, when match with the codebook is found the original data is recovered.
+        for bit in unpadded_bit_string:
+            current_code += bit
+            if current_code in self.reversed_codebook:
+                data = self.reversed_codebook[current_code]
+                decompressed_data += data
+                current_code = ""
+
+        return decompressed_data
 
     @staticmethod
     def pad_converted_data(converted_data):
@@ -210,6 +247,21 @@ class HuffmanCompression(CompressionABC):
         return converted_data
 
     @staticmethod
+    def remove_padding(bit_string):
+        """Removes trailing and leading bits that don't belong to the encoded information.
+        """
+        # The leading byte contains information about the trailing padding.
+        padding_info = bit_string[:8]
+        # Amount of trailing padding bits.
+        extra_padding = int(padding_info, 2)
+
+        # Removes leading and trailing padding bits.
+        bit_string = bit_string[8:]
+        unpadded_bit_string = bit_string[:-1 * extra_padding]
+
+        return unpadded_bit_string
+
+    @staticmethod
     def create_byte_array(padded_converted_data):
         """String to bytearray
         """
@@ -217,6 +269,7 @@ class HuffmanCompression(CompressionABC):
             print("Encoded text not padded properly")
             exit(0)
 
+        # Creates mutable bytes array with 8-bit bytes from the string.
         bytes_data = bytearray()
         for i in range(0, len(padded_converted_data), 8):
             byte = padded_converted_data[i:i + 8]

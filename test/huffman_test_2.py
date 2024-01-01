@@ -31,9 +31,18 @@ huffman_compression.set_codebook(binary_tree.codebook, binary_tree.reversed_code
 encoded_data = huffman_compression.encode(uncompressed_data)
 print(encoded_data)
 
-out_file = (open(out_file_path, "wb"))
+out_file = open(out_file_path, "wb")
 out_file.write(encoded_data)
 out_file.close()
 
 out_file_size = os.stat(out_file_path).st_size
 print("Output file size:", out_file_size, "bytes")
+
+encoded_file = open(out_file_path, "rb")
+compressed_data = encoded_file.read()
+print(type(compressed_data))
+print(compressed_data)
+encoded_file.close()
+
+decompressed_data = huffman_compression.decode(compressed_data)
+print(decompressed_data)
