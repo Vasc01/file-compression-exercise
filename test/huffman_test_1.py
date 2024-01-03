@@ -1,32 +1,38 @@
 """Test of Huffman encoding step by step
 """
 
-from core.compression import BinaryTree, HuffmanCompression
+from core.compression import HuffmanCompression
 
-input_data = "AAA BBB AB  CDDDD CCAA CCAAAAAAAXRRPPLLL  OO"
-
-binary_tree = BinaryTree()
-frequency_dict = binary_tree.create_frequency_dict(input_data)
-binary_tree.create_heap(frequency_dict)
-binary_tree.create_tree()
-binary_tree.initiate_create_codes()
-print(binary_tree.codebook)
-print(binary_tree.reversed_codebook)
+input_data = b"AAA BBB AB  CDDDD CCAA CCAAAAAAAXRRPPLLL  OO"
+print()
+print("Input data:", type(input_data), input_data)
+print()
 
 huffman_compression = HuffmanCompression()
-huffman_compression.set_codebook(binary_tree.codebook, binary_tree.reversed_codebook)
 
+# Encoding:
+
+huffman_compression.set_codebook(input_data)
+
+print("Unpadded and padded code in comparison with byte lengths:")
 converted_data = huffman_compression.convert_to_code(input_data)
 print(converted_data)
-
 padded_converted_data = huffman_compression.pad_converted_data(converted_data)
 print("| 1byte|" * 18)
 print(padded_converted_data)
+print()
 
-mutable_bytes_data = huffman_compression.create_byte_array(padded_converted_data)
-print(mutable_bytes_data)
-encoded_data = bytes(mutable_bytes_data)
-print(encoded_data)
+bytes_data = huffman_compression.encode_to_bytes(padded_converted_data)
+print("Encoded data:", type(bytes_data), bytes_data)
+print()
 
-encoded_data_2 = huffman_compression.encode(input_data)
-print(encoded_data_2)
+# Decoding:
+
+bit_string = huffman_compression.decode_to_string(bytes_data)
+print(bit_string)
+
+unpadded_bit_string = huffman_compression.remove_padding(bit_string)
+print(unpadded_bit_string)
+
+decompressed_data = huffman_compression.convert_to_original(unpadded_bit_string)
+print("Decoded data:", type(decompressed_data), decompressed_data)

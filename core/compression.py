@@ -23,8 +23,6 @@ class LZWCompression(CompressionABC):
     def encode(self, uncompressed_data: bytes):
         """Compress bytes data"""
 
-        print("LZWCompression starts the encode method")
-
         # Build the dictionary.
         # Starts with the amount of entries for the identical code
         dictionary_size = 256
@@ -72,11 +70,6 @@ class LZWCompression(CompressionABC):
         if string:
             temporary_data_output.append(dictionary[string])
         # end LZW compression algorithm
-
-        # output for inspection
-        print(dictionary)
-        print(dictionary_size)
-        print(temporary_data_output)
 
         # integer array to binary
         # compressed_data = struct.pack('>' + 'i' * len(temporary_data_output), *temporary_data_output)
@@ -154,7 +147,7 @@ class LZWCompression(CompressionABC):
         if nextbit < 7: ret.append(nextbyte)
         return ret
 
-    def decode(self):
+    def decode(self, compressed_data):
         raise NotImplemented
 
 
@@ -163,42 +156,40 @@ class HuffmanCompression(CompressionABC):
 
     This class relies on codebook generated from the BinaryTree class.
     It receives input data and a codebook.
-
     """
 
     def __init__(self):
+        # k:v data(int):code(str)
         self.codebook = None
-        self.reversed_codebook = None
 
-    def set_codebook(self, codebook, reversed_codebook):
-        self.codebook = codebook
-        self.reversed_codebook = reversed_codebook
+    def set_codebook(self, uncompressed_data):
 
-    def encode(self, uncompressed_data):
-        """Executes sequence of steps/functions for the encoding process
+        binary_tree = BinaryTree()
+        self.codebook = binary_tree.create_codebook(uncompressed_data)
+
+    def encode(self, uncompressed_data, codebook=None):
+        """Executes sequence of steps for the encoding process.
         """
+        # If no specific codebook is passed standard codebook will be created.
+        if codebook:
+            self.codebook = codebook
+        else:
+            self.set_codebook(uncompressed_data)
+
         converted_data = self.convert_to_code(uncompressed_data)
         padded_converted_data = self.pad_converted_data(converted_data)
-        mutable_bytes_data = self.create_byte_array(padded_converted_data)
-        encoded_data = bytes(mutable_bytes_data)
+        encoded_data = self.encode_to_bytes(padded_converted_data)
 
         return encoded_data
 
-    def decode(self, compressed_data):
+    def decode(self, compressed_data, codebook=None):
         """
         Receives the compressed data (bytes)
         """
-        bit_string = ""
+        if codebook:
+            self.codebook = codebook
 
-        # Extracts the bits from the bytes and combines them to a string in bit_string.
-        for b in compressed_data:
-
-            # bin(int) is used to convert and obtain an integer value's binary string equivalent.
-            # Slice operator omits the prefix "0b" in the string.
-            # rjust() does right alignment of the string,
-            # while filling the left empty spaces with "0" until total length of 8 is reached.
-            bits = bin(b)[2:].rjust(8, '0')
-            bit_string += bits
+        bit_string = self.decode_to_string(compressed_data)
 
         # Removes leading and trailing padding bits.
         unpadded_bit_string = self.remove_padding(bit_string)
@@ -220,15 +211,18 @@ class HuffmanCompression(CompressionABC):
         """Converts encoded data to the original using the reversed codebook
         """
         current_code = ""
-        decompressed_data = ""
+        decoded_bytes = bytearray()
+        reversed_codebook = {v: k for k, v in self.codebook.items()}
 
         # Reads bits from the encoded data, when match with the codebook is found the original data is recovered.
         for bit in unpadded_bit_string:
             current_code += bit
-            if current_code in self.reversed_codebook:
-                data = self.reversed_codebook[current_code]
-                decompressed_data += data
+            if current_code in reversed_codebook:
+                data = reversed_codebook[current_code]
+                decoded_bytes.append(data)
                 current_code = ""
+
+        decompressed_data = bytes(decoded_bytes)
 
         return decompressed_data
 
@@ -262,8 +256,9 @@ class HuffmanCompression(CompressionABC):
         return unpadded_bit_string
 
     @staticmethod
-    def create_byte_array(padded_converted_data):
-        """String to bytearray
+    def encode_to_bytes(padded_converted_data):
+        """String to bytes
+        Used for encoding.
         """
         if len(padded_converted_data) % 8 != 0:
             print("Encoded text not padded properly")
@@ -275,7 +270,28 @@ class HuffmanCompression(CompressionABC):
             byte = padded_converted_data[i:i + 8]
             bytes_data.append(int(byte, 2))
 
-        return bytes_data
+        encoded_data = bytes(bytes_data)
+
+        return encoded_data
+
+    @staticmethod
+    def decode_to_string(compressed_data):
+        """Bytes to string
+        Used for decoding.
+        """
+        bit_string = ""
+
+        # Extracts the bits from the bytes and combines them to a string in bit_string.
+        for b in compressed_data:
+
+            # bin(int) is used to convert and obtain an integer value's binary string equivalent.
+            # Slice operator omits the prefix "0b" in the string.
+            # rjust() does right alignment of the string,
+            # while filling the left empty spaces with "0" until total length of 8 is reached.
+            bits = bin(b)[2:].rjust(8, '0')
+            bit_string += bits
+
+        return bit_string
 
 
 class BinaryTree(object):
@@ -288,10 +304,17 @@ class BinaryTree(object):
 
         # Contains priority queue of nodes with the lowest occurrence values in the front. Managed by heapq.
         self.heap = []
-        # k:v characters:code used for compression.
+        # k:v data(int):code(str) used for compression.
         self.codebook = {}
-        # k:v code:characters used for decompression.
-        self.reversed_codebook = {}
+
+    def create_codebook(self, uncompressed_data):
+
+        frequency = self.create_frequency_dict(uncompressed_data)
+        self.create_heap(frequency)
+        self.create_tree()
+        self.initiate_create_codes()
+
+        return self.codebook
 
     @staticmethod
     def create_frequency_dict(input_data):
@@ -300,12 +323,13 @@ class BinaryTree(object):
         This is the first pass over the complete data. The occurrence determines how far in the front
         of the priority que a node is stored.
         """
-        # frequency dict k:v character:occurrence
+        # frequency dict k:v data:occurrence
+        # Note: byte is transformed automatically to int when becoming key in the dictionary
         frequency = {}
-        for character in input_data:
-            if character not in frequency:
-                frequency[character] = 0
-            frequency[character] += 1
+        for byte in input_data:
+            if byte not in frequency:
+                frequency[byte] = 0
+            frequency[byte] += 1
         return frequency
 
     def create_heap(self, frequency):
@@ -328,7 +352,7 @@ class BinaryTree(object):
         # In the last loop only two nodes will be left, so all nodes are regarded.
         while len(self.heap) > 1:
 
-            # Takes out of the heap the two nodes with the least occurrence, maintaining the heap invariant..
+            # Takes out of the heap the two nodes with the least occurrence, maintaining the heap invariant.
             node_1 = heapq.heappop(self.heap)
             node_2 = heapq.heappop(self.heap)
 
@@ -364,11 +388,9 @@ class BinaryTree(object):
             return None
 
         # Activates only if the node is data containing, not only holding occurrence amount.
-        if root.character:
+        if root.byte:
             # Used for encoding k:v character:code.
-            self.codebook[root.character] = current_code
-            # Used for decoding k:v code:character.
-            self.reversed_codebook[current_code] = root.character
+            self.codebook[root.byte] = current_code
             return
 
         # Navigation adds to the code 0 for going to the left child and 1 for going to the right child.
@@ -382,7 +404,7 @@ class BinaryTree(object):
         pass
 
 
-class Node:
+class Node(object):
     """Describes nodes used in the BinaryTree.
 
     Part of the Huffman tree.
@@ -390,8 +412,9 @@ class Node:
     Attributes:
 
     """
-    def __init__(self, character, occurrence):
-        self.character = character
+    def __init__(self, byte, occurrence):
+        # Note: self.create_frequency_dict changed the byte to an int
+        self.byte = byte
         self.occurrence = occurrence
         self.left_child = None
         self.right_child = None
