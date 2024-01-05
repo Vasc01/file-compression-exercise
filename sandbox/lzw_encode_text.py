@@ -8,7 +8,7 @@ def compress(uncompressed):
 
     # Build the dictionary.
     dict_size = 256
-    dictionary = {chr(i): chr(i) for i in range(dict_size)}
+    dictionary = {chr(i): i for i in range(dict_size)}
 
     # stores sequences for entry in the dictionary
     word = ""

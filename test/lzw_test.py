@@ -15,15 +15,13 @@ print("Input file size:", in_file_size, "bytes")
 in_file = open(in_file_path, 'rb')
 uncompressed_data = in_file.read()
 print("Input data type:", type(uncompressed_data))
+in_file.close()
 
 lzw_compression = LZWCompression()
 compressed_data = lzw_compression.encode(uncompressed_data)
 print("Output data type:", type(compressed_data))
 
-out_file = (
-    open(out_file_path,
-         "wb")
-)
+out_file = (open(out_file_path, "wb"))
 for data in compressed_data:
     out_file.write(data)
 out_file.close()

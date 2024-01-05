@@ -32,10 +32,13 @@ class LZWCompression(CompressionABC):
         # reserve 256 for end of code
         dictionary_size += 1
 
+
+
+
         # stores sequences for entry in the dictionary
         string = ""
 
-        # encoded output in codepoints
+        # encoded output in codepoints int array of codes
         temporary_data_output = []
 
         # start LZW compression algorithm
@@ -70,6 +73,11 @@ class LZWCompression(CompressionABC):
         if string:
             temporary_data_output.append(dictionary[string])
         # end LZW compression algorithm
+
+
+
+
+
 
         # integer array to binary
         # compressed_data = struct.pack('>' + 'i' * len(temporary_data_output), *temporary_data_output)
