@@ -5,7 +5,6 @@ class LZWCompressionBytesNoRestart(CompressionABC):
 
     INITIAL_CODEBOOK_SIZE = 256
     MAXIMUM_CODEBOOK_SIZE = 4096
-    RESTART_CODEBOOK = 256
 
     def __init__(self):
 
@@ -13,16 +12,19 @@ class LZWCompressionBytesNoRestart(CompressionABC):
         self.codebook_size = None
         # Contains the current codebook as it changes through the file encoding.
         self.codebook = None
+        # maximum bit size for codes in the code array
+        self.bit_size = None
 
     def encode(self, uncompressed_data: bytes):
-        """Compress bytes data to bytes output"""
+        """Compress bytes input to bytes output"""
 
         # Build the initial codebook.
         self.create_codebook()
         code_array = self.create_code(uncompressed_data)
-        # compressed_code = self.compress_code(code_array)
-        # return compressed_code
-        return code_array
+        self.calculate_max_bit_size(code_array)
+        compressed_code = self.compress_code(code_array, self.bit_size)
+
+        return compressed_code
 
     def create_codebook(self):
         """Initiation of the base code.
@@ -65,23 +67,45 @@ class LZWCompressionBytesNoRestart(CompressionABC):
 
         return code_array
 
+    def calculate_max_bit_size(self, code_array):
+        """Finds maximum bit size for the largest number in code array.
+        """
+        self.bit_size = max(code_array).bit_length()
+
+    @staticmethod
+    def compress_code(code_array, bit_size):
+        """Use of bit-packing to compress the code array further.
+        """
+        byte_size = (bit_size + 7) // 8  # Number of bytes needed for each integer
+        compressed_code = bytearray()
+        for i in code_array:
+            i_bytes = int(i).to_bytes(byte_size, 'little', signed=True)
+            compressed_code.extend(i_bytes)
+        return bytes(compressed_code)
+
+    @staticmethod
+    def decompress_code(compressed_code, bit_size):
+
+        byte_size = (bit_size + 7) // 8  # Number of bytes used for each integer
+        code_array = []
+        for i in range(0, len(compressed_code), byte_size):
+            i_bytes = compressed_code[i:i + byte_size]
+            code_array.append(int.from_bytes(i_bytes, 'little', signed=True))
+        return code_array
+
     def decode(self, compressed_data):
         """bytes to bytes
         int to bytes
         """
 
         # compressed data in form of bytes is turned into code array
-        # self.decompress_code()
-        code_array = compressed_data  # for now
+        code_array = self.decompress_code(compressed_data, self.bit_size)
 
         self.create_reversed_codebook()
         # decompressed_data = self.recover_data(code_array)
         decompressed_data = self.recover_data(code_array)
 
         return decompressed_data
-
-    def decompress_code(self, compressed_data):
-        pass
 
     def create_reversed_codebook(self):
         """Initiation of the base code.
@@ -110,9 +134,11 @@ class LZWCompressionBytesNoRestart(CompressionABC):
 
             result += entry
 
-            # Add w+entry[0] to the codebook.
-            self.codebook[self.codebook_size] = w + entry[0]
-            self.codebook_size += 1
+            if self.codebook_size < self.MAXIMUM_CODEBOOK_SIZE:
+
+                # Add w+entry[0] to the codebook.
+                self.codebook[self.codebook_size] = w + entry[0]
+                self.codebook_size += 1
 
             w = entry
 
