@@ -8,6 +8,11 @@ from abc import ABC, abstractmethod
 
 
 class CompressionABC(ABC):
+    """A template for creation of compression algorithm.
+
+    The encode and decode methods are required for the interface with the compression algorithms.
+    In the implemented LZW and Huffman algorithms they receive bytes-data and return bytes-data.
+    """
 
     @abstractmethod
     def encode(self, data):

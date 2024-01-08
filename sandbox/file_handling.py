@@ -3,7 +3,7 @@
 import os
 from core.compression import HuffmanCompression
 
-folder_path = r"C:\Workspace\1_PyCh_projects\file-compression-exercise\test\example_files"
+folder_path = r"/test/example_files"
 file_name = r"treasure_island_ch1.txt"
 in_file_path = folder_path + "\\" + file_name
 
