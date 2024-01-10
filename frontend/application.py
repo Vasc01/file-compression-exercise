@@ -1,38 +1,22 @@
 """ Demonstration of the backend capabilities.
+
 Makes use of fire CLI library
 """
 
 from core.compression import LZWCompression, HuffmanCompression
-from core.performance_calculator import PerformanceCalculator
 import fire
+
+from data.file_handler import FileHandler
 
 
 class Application(object):
 
-    def __init__(self):
-        self.lzw_algorithm = LZWCompression()
-        self.huffman_algorithm = HuffmanCompression()
-        self.performance_calculator = PerformanceCalculator()
+    def encode(self, path: str, algorithm: str, new_name=None):
+        file_handler = FileHandler()
+        file_handler.initiate_encode(path, algorithm, new_name)
 
-    def compress(self, algorithm, path):
-        print('application starts the compress function')
-
-        self.performance_calculator.set_start_time()
-
-        if algorithm == "lzw":
-            self.lzw_algorithm.encode(path)
-        elif algorithm == "huffman":
-            pass
-
-        self.performance_calculator.set_end_time()
-        print("Compression took XX seconds. Compression ratio XX%")
-
-    def decompress(self):
+    def decode(self, file_to_decode: str, new_file_name: str):
         print('application starts the decompress function')
-
-    def stream(self):
-        # stream encoding
-        pass
 
 
 def run():
