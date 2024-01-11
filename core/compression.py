@@ -609,7 +609,7 @@ class BinaryTree(object):
             return None
 
         # Activates only if the node is data containing, not only holding occurrence amount.
-        if root.byte:
+        if root.byte or root.byte == 0:
             # Used for encoding k:v character:code.
             self.codebook[root.byte] = current_code
             return
