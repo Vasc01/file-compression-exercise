@@ -58,6 +58,13 @@ class FileHandler(FileHandlerABC):
         with open(new_path, 'wb') as f:
             f.write(data)
 
+    @staticmethod
+    def rebuild_file_path(file_path, file_name, file_extension):
+
+        path = os.path.join(file_path, (file_name + file_extension))
+
+        return path
+
     def get_file_size(self, path):
         pass
 

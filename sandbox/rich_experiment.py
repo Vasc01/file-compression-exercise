@@ -33,4 +33,6 @@ table.add_row("converted", "test-test.lzw", "50kB", "3.55")
 rprint()
 console.print(table)
 
+# rprint()
+console.rule(style="rgb(229,193,0)")
 rprint()

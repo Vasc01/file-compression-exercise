@@ -3,20 +3,23 @@
 Makes use of fire CLI library for input
 and rich library for output.
 """
+import os
+from pathlib import Path
 
-from rich import print as rprint
 import fire
 
 from core.compression import LZWCompression, HuffmanCompression
 from data.file_handler import FileHandler
+from frontend.rich_output import RichOutput
 
 
 class Application(object):
 
-    def __init__(self, file_handler, lzw_compression, huffman_compression):
+    def __init__(self, file_handler, lzw_compression, huffman_compression, rich_output):
         self.file_handler = file_handler
         self.lzw_compression = lzw_compression
         self.huffman_compression = huffman_compression
+        self.rich_output = rich_output
 
     def encode(self, complete_path: str, algorithm: str, new_name=None):
         # complete path can be absolute path to file or just the file name
@@ -41,6 +44,32 @@ class Application(object):
                                         file_path,
                                         file_name,
                                         file_extension_compressed)
+
+        # Data for output creation.
+        header = "LZW" if algorithm == "lzw" else "Huffman"
+        original_filename = path_info[1] + file_extension
+        converted_filename = file_name + file_extension_compressed
+        original_size = os.stat(complete_path).st_size
+        new_file_path = self.file_handler.rebuild_file_path(file_path, file_name, file_extension_compressed)
+        new_file_size = os.stat(new_file_path).st_size
+        compression_rate = original_size/new_file_size
+        path = file_path if len(file_path) else Path.cwd()
+
+        # Output as feedback after file creation.
+        print()
+        self.rich_output.add_rule(f"{header} Encoding")
+
+        self.rich_output.add_path(path)
+        print()
+
+        self.rich_output.add_table(original_filename,
+                                   converted_filename,
+                                   f"{original_size} Bytes",
+                                   f"{new_file_size} Bytes",
+                                   compression_rate)
+
+        self.rich_output.add_rule()
+        print()
 
     def _execute_encoding_algorithm(self, algorithm, data_for_compression, file_extension):
 
@@ -94,10 +123,13 @@ class Application(object):
 
             return decoded_data
 
-    @staticmethod
-    def help():
-        rprint("[purple]This text is impossible to read")
-        rprint(":warning:")
+    def help(self):
+        print()
+        self.rich_output.add_rule(f"Help")
+
+        self.rich_output.display_help()
+        self.rich_output.add_rule()
+        print()
 
 
 def run():
@@ -105,7 +137,9 @@ def run():
     file_handler = FileHandler()
     lzw_compression = LZWCompression()
     huffman_compression = HuffmanCompression()
+    rich_output = RichOutput()
 
     fire.Fire(Application(file_handler=file_handler,
                           lzw_compression=lzw_compression,
-                          huffman_compression=huffman_compression))
+                          huffman_compression=huffman_compression,
+                          rich_output=rich_output))
