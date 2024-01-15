@@ -1,7 +1,6 @@
 import click
 
 from core.compression import LZWCompression, HuffmanCompression
-from core.performance_calculator import PerformanceCalculator
 
 
 class Application(object):
@@ -9,7 +8,6 @@ class Application(object):
     def __init__(self):
         self.lzw_algorithm = LZWCompression()
         self.huffman_algorithm = HuffmanCompression()
-        self.performance_calculator = PerformanceCalculator
 
     @click.group()
     def cli(self):

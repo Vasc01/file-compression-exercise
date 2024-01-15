@@ -18,7 +18,7 @@ class RichOutput(object):
 
     Attributes:
         output_table (Table): Table with information about encoding or decoding process.
-        help_table (Table): Table with information about software features and available commands.
+        info_table (Table): Table with information about software features and available commands.
         console (Console): Provides control over terminal formatting.
     """
 
@@ -31,7 +31,7 @@ class RichOutput(object):
                                   show_edge=False,
                                   collapse_padding=True,
                                   box=SIMPLE_HEAD)
-        self.help_table = Table(style="rgb(229,193,0)",
+        self.info_table = Table(style="rgb(229,193,0)",
                                 header_style="rgb(229,193,0)",
                                 pad_edge=False,
                                 show_edge=False,
@@ -88,7 +88,7 @@ class RichOutput(object):
 
         self.console.print(self.output_table)
 
-    def display_help(self):
+    def display_info(self):
         """A text block with helpful information about the operation of the program is created."""
 
         rprint("[rgb(229,193,0)]This application will perform encoding or decoding on any type of files using"
@@ -96,17 +96,17 @@ class RichOutput(object):
         rprint("[rgb(229,193,0)]It is operated as follows:")
 
         # Creates columns of the table.
-        self.help_table.add_column("[green]command  ", justify="left", style="green")
-        self.help_table.add_column("complete path or file name  ", justify="left", style="rgb(229,193,0)")
-        self.help_table.add_column("[green]algorithm  ", justify="left", style="green")
-        self.help_table.add_column("[dim]optional new name for the output file", justify="left",
+        self.info_table.add_column("[green]command  ", justify="left", style="green")
+        self.info_table.add_column("complete path or file name  ", justify="left", style="rgb(229,193,0)")
+        self.info_table.add_column("[green]algorithm  ", justify="left", style="green")
+        self.info_table.add_column("[dim]optional new name for the output file", justify="left",
                                    style="dim rgb(229,193,0)")
 
         # Creates rows of the table.
-        self.help_table.add_row("--encode", "filename.extension", "lzw/huf", "new_filename")
-        self.help_table.add_row("--decode", "filename.extension", "", "new_filename")
+        self.info_table.add_row("--encode", "filename.extension", "lzw/huf", "new_filename")
+        self.info_table.add_row("--decode", "filename.extension", "", "new_filename")
 
-        self.console.print(self.help_table)
+        self.console.print(self.info_table)
 
         # Example commands.
         rprint()

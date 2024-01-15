@@ -1,4 +1,4 @@
-""" To be able to get data from files and after processing it to save it in another file a file handler is used."""
+""" To be able to get data from files and after processing it to save it in another file, a file handler is used."""
 
 import os.path
 import pickle
@@ -6,10 +6,36 @@ from abc import ABC, abstractmethod
 
 
 class FileHandlerABC(ABC):
+    """Defines file and path handling methods needed for the frontend to operate."""
 
     @staticmethod
     @abstractmethod
-    def get_path_info(path):
+    def get_path_info(*args):
+        raise NotImplemented
+
+    @staticmethod
+    @abstractmethod
+    def get_file_bytes(*args):
+        raise NotImplemented
+
+    @staticmethod
+    @abstractmethod
+    def write_in_file(*args):
+        raise NotImplemented
+
+    @staticmethod
+    @abstractmethod
+    def read_from_file(*args):
+        raise NotImplemented
+
+    @staticmethod
+    @abstractmethod
+    def recreate_file(*args):
+        raise NotImplemented
+
+    @staticmethod
+    @abstractmethod
+    def rebuild_file_path(*args):
         raise NotImplemented
 
 

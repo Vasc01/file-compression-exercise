@@ -270,7 +270,7 @@ class Application(object):
 
         print()
         self.rich_output.add_rule("Info")
-        self.rich_output.display_help()
+        self.rich_output.display_info()
         self.rich_output.add_rule()
         print()
 
@@ -301,5 +301,5 @@ def run():
                 "-d": application.decode, "--decode": application.decode,
                 "-i": application.print_info, "--info": application.print_info}
 
-    # Load the commands in fire for use in the console.
+    # Loads the commands in fire for use in the console.
     fire.Fire(commands)
