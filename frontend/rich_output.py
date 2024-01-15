@@ -103,19 +103,30 @@ class RichOutput(object):
                                    style="dim rgb(229,193,0)")
 
         # Creates rows of the table.
-        self.help_table.add_row("encode", "filename.extension", "lzw/huf", "new_filename")
-        self.help_table.add_row("decode", "filename.extension", "", "new_filename")
+        self.help_table.add_row("--encode", "filename.extension", "lzw/huf", "new_filename")
+        self.help_table.add_row("--decode", "filename.extension", "", "new_filename")
 
         self.console.print(self.help_table)
 
         # Example commands.
         rprint()
         rprint("[rgb(229,193,0)]Examples:")
-        rprint("[green]encode",
+
+        # Encode example - short and long notation.
+        rprint("[green]-e",
                "[rgb(229,193,0)]text.txt",
                "[green]lzw",
                "[dim rgb(229,193,0)]encoded_text")
-        rprint("[green]decode",
+        rprint("[green]--encode",
+               "[rgb(229,193,0)]text.txt",
+               "[green]lzw",
+               "[dim rgb(229,193,0)]encoded_text")
+
+        # Decode example - short and long notation.
+        rprint("[green]-d",
+               "[rgb(229,193,0)]encoded_text.lzw",
+               "[dim rgb(229,193,0)]decoded_text")
+        rprint("[green]--decode",
                "[rgb(229,193,0)]encoded_text.lzw",
                "[dim rgb(229,193,0)]decoded_text")
 
@@ -128,7 +139,7 @@ class RichOutput(object):
             args: Any arguments needed for the mentioned function.
 
         Returns:
-            data: The result of the executed function.
+            data (bytes): The result of the executed function.
         """
         console = Console()
 

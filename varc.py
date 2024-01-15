@@ -4,12 +4,14 @@ Use this file as entry point to the program.
 With the following commands you have access to the core functionalities.
 
 command   complete path or file name   algorithm   optional new name for the output file
-encode    filename.extension           lzw/huf     new_filename
-decode    filename.extension                       new_filename
+--encode  filename.extension           lzw/huf     new_filename
+--decode  filename.extension                       new_filename
 
 Examples:
-encode text.txt lzw encoded_text
-decode encoded_text.lzw decoded_text
+-e text.txt lzw encoded_text
+--encode text.txt lzw encoded_text
+-d encoded_text.lzw decoded_text
+--decode encoded_text.lzw decoded_text
 """
 
 from frontend.application import run

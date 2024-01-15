@@ -86,14 +86,21 @@ class Application(object):
                                         file_extension_compressed)
 
         # Data for output creation.
+
         output_header = "LZW" if algorithm == "lzw" else "Huffman"
+
+        # Related to original file.
         original_filename = path_info[1] + file_extension
-        converted_filename = file_name + file_extension_compressed
         original_size = os.stat(complete_path).st_size
+        path = file_path if len(file_path) else Path.cwd()
+
+        # Related to new file.
+        converted_filename = file_name + file_extension_compressed
         new_file_path = self.file_handler.rebuild_file_path(file_path, file_name, file_extension_compressed)
         new_file_size = os.stat(new_file_path).st_size
+
+        # Statistical calculations.
         compression_rate = original_size / new_file_size
-        path = file_path if len(file_path) else Path.cwd()
         time_elapsed = end - start
 
         # Output block as feedback after file creation.
@@ -193,14 +200,21 @@ class Application(object):
                                         file_extension_original)
 
         # Data for output creation.
+
         output_header = "LZW" if file_extension == ".lzw" else "Huffman"
+
+        # Related to original file.
+        path = file_path if len(file_path) else Path.cwd()
         original_filename = path_info[1] + file_extension
-        converted_filename = file_name + file_extension_original
         original_size = os.stat(complete_path).st_size
+
+        # Related to new file.
+        converted_filename = file_name + file_extension_original
         new_file_path = self.file_handler.rebuild_file_path(file_path, file_name, file_extension_original)
         new_file_size = os.stat(new_file_path).st_size
-        compression_rate = 0
-        path = file_path if len(file_path) else Path.cwd()
+
+        # Statistical calculations.
+        compression_rate = 0  # For decoding no data on compression is displayed.
         time_elapsed = end - start
 
         # Output block as feedback after file creation.
@@ -248,14 +262,14 @@ class Application(object):
 
             return decoded_data
 
-    def help(self):
-        """Creates advice for use of the program.
+    def print_info(self):
+        """Pints an information block about available functionalities.
 
         A text block with helpful information about the operation of the program will be printed.
         """
 
         print()
-        self.rich_output.add_rule(f"Help")
+        self.rich_output.add_rule("Info")
         self.rich_output.display_help()
         self.rich_output.add_rule()
         print()
@@ -265,17 +279,27 @@ def run():
     """Activation of the frontend.
 
     All necessary backend objects are created and loaded in the frontend class.
-    The frontend class Application is than passed to the fire library which makes its methods directly accessible
+    The frontend methods are mapped to shortcuts and passed to the fire library which makes them directly accessible
     from the terminal.
     """
+
     # Backend objects.
     file_handler = FileHandler()
     lzw_compression = LZWCompression()
     huffman_compression = HuffmanCompression()
     rich_output = RichOutput()
 
-    # Creation of a frontend with the fire library.
-    fire.Fire(Application(file_handler=file_handler,
-                          lzw_compression=lzw_compression,
-                          huffman_compression=huffman_compression,
-                          rich_output=rich_output))
+    # Frontend.
+    application = Application(file_handler=file_handler,
+                              lzw_compression=lzw_compression,
+                              huffman_compression=huffman_compression,
+                              rich_output=rich_output)
+
+    # Mapping of methods to commands for their execution in CLI.
+    # -h and --help are already taken as part of fire library. Instead -i and -info are used.
+    commands = {"-e": application.encode, "--encode": application.encode,
+                "-d": application.decode, "--decode": application.decode,
+                "-i": application.print_info, "--info": application.print_info}
+
+    # Load the commands in fire for use in the console.
+    fire.Fire(commands)
