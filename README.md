@@ -9,8 +9,8 @@ For more information on the project and contribution guidelines see the project 
   - [python 3.7 or newer](https://www.python.org)
   - [fire CLI library](https://github.com/google/python-fire)
   - [rich text library](https://github.com/Textualize/rich)
-
- Note: Some terminals may not support visualizations like loading bars and icons. Other than that the encoding and decoding schuldnt be affected.
+  - 
+- Note: Some terminals may not support visualizations like loading bars and icons. Other than that the encoding and decoding schuldn't be affected.
  
 # How to Use
 
@@ -19,7 +19,7 @@ The program is operated from the terminal or the IDE.
 Entry point to the program is the varc.py file.
 
 If you start with `C:\path\to\varc.py\file\location> python varc.py` you will receieve listed command options.
-Advisable is to start with `C:\path\to\varc.py\file\location> python varc.py -i` or `C:\path\to\varc.py\file\location> python varc.py --info`. This will provide more detailed command formating information as listed bellow.
+Advisable is to start with `C:\path\to\varc.py\file\location> python varc.py -i` or `C:\path\to\varc.py\file\location> python varc.py --info`. This will provide more detailed command formatting information as listed bellow.
 
 ```
 ────────────────────────────────────────────── Info ─────────────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ Examples:
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ```
 
-Commands for encoding decoding and display of the info block are available in long and short version.
+Commands for encoding, decoding and display of the info block are available in long and short version.
 
 | Command      | Shortcut   |
 |--------------|------------|
