@@ -16,10 +16,12 @@ class CompressionABC(ABC):
 
     @abstractmethod
     def encode(self, data):
+        # TODO: Add docstring.
         raise NotImplemented
 
     @abstractmethod
     def decode(self, data):
+        # TODO: Add docstring.
         raise NotImplemented
 
 
@@ -281,6 +283,9 @@ class HuffmanCompression(CompressionABC):
         self.codebook = None
 
     def set_codebook(self, uncompressed_data: bytes):
+        # FIXME: Better name it to create_codebook() or generate_codebook() and change the
+        # algorithm to create the codebook in one pass.
+
         """Calls the codebook creation.
 
         The algorithm relies on an initial pass through the uncompressed data to generate an optimal codebook.
@@ -352,6 +357,9 @@ class HuffmanCompression(CompressionABC):
         return decompressed_data
 
     def convert_to_code(self, uncompressed_data: bytes):
+        # FIXME: Actually this is the true compression/encoding of the data, naming not good. Do we need a separate
+        #  function for this? Why not implement it in other places such as encode()? We use it only once.
+
         """Replaces data entries with code from the codebook
 
         Args:
@@ -369,6 +377,9 @@ class HuffmanCompression(CompressionABC):
         return converted_data
 
     def convert_to_original(self, unpadded_bit_string: str):
+        # FIXME: This is actually the true decompression/decoding of the data, naming not good. Do we need a separate or
+        # we can implement it in other places such as decode()? We use it only once.
+
         """Converts encoded data to the original using the reversed codebook.
 
         Args:
@@ -395,6 +406,8 @@ class HuffmanCompression(CompressionABC):
 
     @staticmethod
     def pad_converted_data(converted_data: str):
+        # FIXME: Rename to add_padding() or add_padding_bits().
+
         """Adds padding to converted data to keep it multiple of 8.
 
         Args:
@@ -437,6 +450,8 @@ class HuffmanCompression(CompressionABC):
 
     @staticmethod
     def encode_to_bytes(padded_converted_data: str):
+        # FIXME: Very poor naming of the function and arguments...
+
         """Converts string of bits to bytes.
 
         Args:
@@ -461,6 +476,8 @@ class HuffmanCompression(CompressionABC):
 
     @staticmethod
     def decode_to_string(compressed_data: bytes):
+        # FIXME: Very poor naming of the function...
+
         """Converts bytes to string of bits.
 
         Args:
@@ -498,10 +515,14 @@ class BinaryTree(object):
         """Initiates an instance of the binary tree."""
 
         self.heap = []
+
         # k:v data(int):code(str) used for compression.
+        # FIXME: Doesn't this belong to the HuffmanCompression class?
         self.codebook = {}
 
     def create_codebook(self, uncompressed_data: bytes):
+        # FIXME: This method belongs to the HuffmanCompression class (see also this class' docstring).
+
         """Based on frequency of occurrence a code is assigned to the original data points.
 
         This is the first of two passes of the Huffman algorithm over the data.
@@ -514,7 +535,9 @@ class BinaryTree(object):
             codebook (dict): Codebook with codes generated from the Huffman tree.
         """
 
+        # FIXME: Change to name to statistics, symbol_frequencies, etc.
         frequency = self.create_frequency_dict(input_data=uncompressed_data)
+
         self.create_heap(frequency=frequency)
         self.create_tree()
         self.initiate_create_codes()
@@ -523,6 +546,8 @@ class BinaryTree(object):
 
     @staticmethod
     def create_frequency_dict(input_data: bytes):
+        # FIXME: This method could be private or protected.
+
         """Determines how many times each element from the input data occurred.
 
         This is the first pass over the complete data. The occurrence determines how far in the front
@@ -547,6 +572,8 @@ class BinaryTree(object):
         return frequency
 
     def create_heap(self, frequency: dict):
+        # FIXME: This method could be private or protected.
+
         """Fills the priority queue with elements.
 
         Nodes are stored in the priority queue as preparation for the tree creation.
@@ -562,6 +589,9 @@ class BinaryTree(object):
             heapq.heappush(self.heap, node)
 
     def create_tree(self):
+        # FIXME: Do not repeate words from the namespaces, why BinaryTree.create_tree()? Could we
+        #   use BinaryTree.create() instead?
+
         """Connects individual nodes.
 
         For two nodes with the lowest occurrence one parent is created with the sum of their occurrences.
@@ -587,6 +617,9 @@ class BinaryTree(object):
             # At the end the priority que will have only one node with the largest number of occurrence.
 
     def initiate_create_codes(self):
+        # FIXME: Why we need a separate function for this? Why not implement it in other places
+        #   such as create_codes or the constructor?
+
         """Starts the recursion for creation of codes."""
 
         # Creates initial parameters for the recursion.
@@ -597,6 +630,8 @@ class BinaryTree(object):
         self.create_codes(root, current_code)
 
     def create_codes(self, root, current_code: str):
+        # FIXME:  The root is a state of the instance, why we need it here?
+
         """Generates codes by traversing the entire tree.
 
         Args:
@@ -620,6 +655,8 @@ class BinaryTree(object):
 
 
 class Node(object):
+    # FIXME: Belongs to HuffmanTree or BinaryTree?
+
     """Nodes are building blocks of the Huffman tree.
 
     Node is used in the BinaryTree.
